@@ -1,0 +1,80 @@
+= Thread-local accessors for your classes
+
+Yet another tiny library to tackle this problem.
+
+=== Example
+
+  require 'rubygems'
+  require 'tlattr_accessors'
+
+  class ThreadExample
+    extend ThreadLocalAccessors
+    tlattr_accessor :foo
+
+    def test
+      self.foo = "bla"
+      Thread.new {
+        puts foo                  # prints "nil"
+        self.foo = "blubb"
+        puts foo                  # prints "blubb"
+      }.join
+      puts foo                    # prints "bla"
+    end
+  end
+
+  ThreadExample.new.test
+
+If you want to enable them globally, add this somewhere (e.g. an initializer in Rails)
+
+  Object.send :extend, ThreadLocalAccessors
+
+=== Default values
+
+Adding +true+ as last parameter will cause the first value set on the
+attribute to act as default value for all other threads:
+
+  tlattr_accessor :yeah, :baby, true
+
+  def test_default
+    self.yeah = "bla"
+    Thread.new {
+      puts yeah                  # prints "bla"
+      puts baby                  # prints "nil"
+      self.baby = "blubb"
+      self.yeah = "blabla"
+    }.join
+    puts yeah                    # prints "bla"
+    puts baby                    # prints "blubb"
+  end
+
+=== Note about JRuby
+
+As JRuby doesn't support finalizers, using this gem with JRuby in an long running 
+app that spins up many threads will cause a memory leak.
+
+In this case, use the gem from Mathias Meyer, which does the same (and more) 
+but is slower if you need to access the values frequently (it uses the
+<tt>Thread.current</tt>-Hash with dynamically generated keys to avoid clashes
+in the global namespace of <tt>Thread.current</tt>):
+
+http://github.com/mattmatt/threadlocal-attr-accessor
+
+=== Getters and Setters
+
+This gem doesn't support <tt>tlattr</tt> or <tt>tlattr_reader|writer</tt> for
+the simple reason that they don't make any sense here (you don't have an "instance
+variable", so you need both methods).
+If you want to hide one of them from your API, you can always make them private:
+
+  tlattr_accessor :foo
+  private :foo= # hide the setter
+
+=== Running specs
+
+If you haven't already, install the rspec gem, then run:
+
+  spec spec
+
+
+(c) 2009, Max Schoefmann <max (a) pragmatic-it de>
+Released under the MIT license
