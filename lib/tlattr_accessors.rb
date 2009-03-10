@@ -33,11 +33,11 @@ module ThreadLocalAccessors
 
         def #{name}=(val)
           #{ivar} = Hash.new #{'{|h, k| h[k] = val}' if first_is_default} unless #{ivar}
-          unless #{ivar}.has_key?(Thread.current)
-            finalize = Thread.current.object_id # required for JRuby compatibility
-            ObjectSpace.define_finalizer(Thread.current, lambda { #{ivar}.delete(finalize) })
+          thread_id = Thread.current.object_id
+          unless #{ivar}.has_key?(thread_id)
+            ObjectSpace.define_finalizer(Thread.current, lambda { #{ivar}.delete(thread_id) })
           end
-          #{ivar}[Thread.current.object_id] = val
+          #{ivar}[thread_id] = val
         end
       }, __FILE__, __LINE__
     end

@@ -60,7 +60,6 @@ describe ThreadLocalAccessors do
     x.bar.should == 2
   end
 
-  # This will epically FAIL under JRuby, as JRuby doesn't support finalizers
   it 'should not leak memory' do
     x = Foo.new
     n = 6000
@@ -72,6 +71,16 @@ describe ThreadLocalAccessors do
     end
     hash = x.send :instance_variable_get, '@_tlattr_bar'
     hash.size.should < (n / 2) # it should be a lot lower than n!
+  end
+
+  it 'should define only one finalizer per thread' do
+    ObjectSpace.should_receive(:define_finalizer).exactly(:twice)
+    x = Foo.new
+    2.times do
+      Thread.new do
+        10.times { x.foo = "bar" }
+      end.join
+    end
   end
 
 end

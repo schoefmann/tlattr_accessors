@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{tlattr_accessors}
-  s.version = "0.0.2"
+  s.version = "0.0.3"
   s.authors = ["Maximilian Sch\303\266fmann"]
   s.date = %q{2009-03-10}
   s.description = "thread-local accessors for your classes"
