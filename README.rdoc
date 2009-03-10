@@ -2,6 +2,8 @@
 
 Yet another tiny library to tackle this problem.
 
+Install with: <tt>gem install schoefmax-tlattr_accessors --source=http://gems.github.com</tt>
+
 === Example
 
   require 'rubygems'
@@ -47,18 +49,6 @@ attribute to act as default value for all other threads:
     puts baby                    # prints "blubb"
   end
 
-=== Note about JRuby
-
-As JRuby doesn't support finalizers, using this gem with JRuby in an long running 
-app that spins up many threads will cause a memory leak.
-
-In this case, use the gem from Mathias Meyer, which does the same (and more) 
-but is slower if you need to access the values frequently (it uses the
-<tt>Thread.current</tt>-Hash with dynamically generated keys to avoid clashes
-in the global namespace of <tt>Thread.current</tt>):
-
-http://github.com/mattmatt/threadlocal-attr-accessor
-
 === Getters and Setters
 
 This gem doesn't support <tt>tlattr</tt> or <tt>tlattr_reader|writer</tt> for
@@ -68,6 +58,17 @@ If you want to hide one of them from your API, you can always make them private:
 
   tlattr_accessor :foo
   private :foo= # hide the setter
+
+=== Performance
+
+The <tt>Thread.current</tt>-Hash is a global namespace. Using it to store
+thread-local variables safely requires carefully crafted keys, which tend to
+be rather expensive to compute. This hurts performance if the attribute is
+accessed frequently.
+Therefore, this library uses a different approach, which is a lot faster:
+The values are stored in a separate hash which is keyed by the object_id of
+the thread. Finalizers make sure no memory is leaked when threads finish
+(see the spec). 
 
 === Running specs
 
