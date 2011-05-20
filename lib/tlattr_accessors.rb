@@ -35,7 +35,7 @@ module ThreadLocalAccessors
           #{ivar} = Hash.new #{'{|h, k| h[k] = val}' if first_is_default} unless #{ivar}
           thread_id = Thread.current.object_id
           unless #{ivar}.has_key?(thread_id)
-            ObjectSpace.define_finalizer(Thread.current, lambda { #{ivar}.delete(thread_id) })
+            ObjectSpace.define_finalizer(Thread.current, proc {|id| #{ivar}.delete(thread_id) })
           end
           #{ivar}[thread_id] = val
         end
