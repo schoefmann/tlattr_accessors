@@ -69,6 +69,7 @@ describe ThreadLocalAccessors do
         x.bar = Bar.new(rand)
       end.join
     end
+    GC.start
     hash = x.send :instance_variable_get, '@_tlattr_bar'
     hash.size.should < (n / 2) # it should be a lot lower than n!
   end
